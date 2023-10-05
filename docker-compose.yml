@@ -13,7 +13,7 @@ services:
       - ./mongodb/db:/data/db
   api:
     build: ./anime_character_api
-    command: bash -c "npm run build && npm start"
+    command: bash -c "npm run build && npm start bootstrap"
     container_name: Anime-Character-API
     depends_on:
       - db
