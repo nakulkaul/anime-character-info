@@ -1,0 +1,45 @@
+version: "3"
+
+services:
+  db:
+    container_name: Anime-Character-DB
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "27017:27017"
+    image: mongo:latest
+    restart: always
+    volumes:
+      - ./mongodb/db:/data/db
+  api:
+    build: ./anime_character_api
+    command: bash -c "npm run build && npm start"
+    container_name: Anime-Character-API
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: anime-character:api
+    restart: on-failure
+    volumes:
+      - ./anime_character_api:/anime-character
+  webui:
+    build: ./anime_character_webui
+    command: npm run build
+    container_name: Anime-Character-Web-UI
+    image: anime-character:webui
+    volumes:
+      - ./anime_character_webui:/anime-character
+  proxy:
+    container_name: Anime-Character-Proxy
+    depends_on:
+      - api
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: on-failure
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./certs:/etc/ssl/certs
+      - ./anime_character_webui/dist:/var/www/html
